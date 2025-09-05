@@ -3,7 +3,7 @@
 
 <head>
     <title>Admin Panel • Secure File Drop</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
@@ -101,15 +101,22 @@
                             <td>{{.Username}}</td>
                             <td>{{if .IsAdmin}}Admin{{else}}User{{end}}</td>
                             <td>
-                                <form class="form-inline" method="post" action="/admin/users/update"
-                                    style="display:flex;gap:.5rem;align-items:center">
-                                    <input type="hidden" name="user_id" value="{{.ID}}">
-                                    <input type="password" name="new_password" placeholder="New password (optional)"
-                                        style="flex:1">
-                                    <label class="check"><input type="checkbox" name="is_admin" {{if
-                                            .IsAdmin}}checked{{end}}> Admin</label>
-                                    <button class="btn" type="submit">Update</button>
-                                </form>
+                                <div class="inline-actions">
+                                    <form class="form-inline" method="post" action="/admin/users/update">
+                                        <input type="hidden" name="user_id" value="{{.ID}}">
+                                        <input type="password" name="new_password" placeholder="New password (optional)"
+                                            class="grow">
+                                        <label class="check"><input type="checkbox" name="is_admin" {{if
+                                                .IsAdmin}}checked{{end}}> Admin</label>
+                                        <button class="btn" type="submit">Update</button>
+                                    </form>
+
+                                    <form class="form-inline" method="post" action="/admin/users/delete"
+                                        onsubmit="return confirm('Delete user {{.Username}}? This cannot be undone.');">
+                                        <input type="hidden" name="user_id" value="{{.ID}}">
+                                        <button class="btn danger" type="submit">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {{end}}

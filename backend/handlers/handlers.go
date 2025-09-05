@@ -45,6 +45,7 @@ func RegisterHandlers(r *mux.Router, db *sql.DB, cfg *config.Config) {
 	r.HandleFunc("/admin", h.AuthMiddleware(h.AdminMiddleware(h.AdminPage))).Methods("GET")
 	r.HandleFunc("/admin/users", h.AuthMiddleware(h.AdminMiddleware(h.CreateUser))).Methods("POST")
 	r.HandleFunc("/admin/users/update", h.AuthMiddleware(h.AdminMiddleware(h.UpdateUser))).Methods("POST")
+	r.HandleFunc("/admin/users/delete", h.AuthMiddleware(h.AdminMiddleware(h.DeleteUser))).Methods("POST")
 	r.HandleFunc("/admin/settings", h.AuthMiddleware(h.AdminMiddleware(h.UpdateSettings))).Methods("POST")
 	r.HandleFunc("/logs", h.AuthMiddleware(h.AdminMiddleware(h.LogsPage))).Methods("GET")
 
@@ -303,7 +304,7 @@ func (h *Handler) AdminPage(w http.ResponseWriter, r *http.Request) {
 	_ = h.DB.QueryRow(`SELECT allowed_extensions, blocked_extensions, max_upload_size_mb FROM settings LIMIT 1`).
 		Scan(&allowedCSV, &blockedCSV, &maxMB)
 
-	// Read query parameters and map to human messages
+	// Map query params -> friendly banners
 	var okMsg, errMsg string
 	switch r.URL.Query().Get("ok") {
 	case "user-created":
@@ -312,6 +313,8 @@ func (h *Handler) AdminPage(w http.ResponseWriter, r *http.Request) {
 		okMsg = "User updated successfully."
 	case "settings-updated":
 		okMsg = "Settings saved."
+	case "user-deleted":
+		okMsg = "User deleted."
 	}
 	switch r.URL.Query().Get("err") {
 	case "user-exists":
@@ -320,6 +323,12 @@ func (h *Handler) AdminPage(w http.ResponseWriter, r *http.Request) {
 		errMsg = "Database error. Please try again."
 	case "bad-request":
 		errMsg = "Bad request."
+	case "cannot-delete-self":
+		errMsg = "You can’t delete your own account."
+	case "last-admin":
+		errMsg = "You can’t delete the last remaining admin."
+	case "not-found":
+		errMsg = "User not found."
 	}
 
 	data := map[string]any{
@@ -409,6 +418,64 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/admin?ok=user-updated", http.StatusSeeOther)
+}
+
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Redirect(w, r, "/admin?err=bad-request", http.StatusSeeOther)
+		return
+	}
+
+	idStr := r.FormValue("user_id")
+	id, _ := strconv.Atoi(idStr)
+	if id == 0 {
+		http.Redirect(w, r, "/admin?err=bad-request", http.StatusSeeOther)
+		return
+	}
+
+	// Lookup target user
+	var targetUsername string
+	var targetIsAdmin bool
+	err := h.DB.QueryRow(`SELECT username, is_admin FROM users WHERE id=?`, id).
+		Scan(&targetUsername, &targetIsAdmin)
+	if err == sql.ErrNoRows {
+		http.Redirect(w, r, "/admin?err=not-found", http.StatusSeeOther)
+		return
+	} else if err != nil {
+		http.Redirect(w, r, "/admin?err=db", http.StatusSeeOther)
+		return
+	}
+
+	// Prevent deleting yourself
+	current := r.Header.Get("X-Username")
+	if strings.EqualFold(current, targetUsername) {
+		http.Redirect(w, r, "/admin?err=cannot-delete-self", http.StatusSeeOther)
+		return
+	}
+
+	// If target is admin, ensure at least one other admin remains
+	if targetIsAdmin {
+		var adminCount int
+		if err := h.DB.QueryRow(`SELECT COUNT(*) FROM users WHERE is_admin=1`).Scan(&adminCount); err != nil {
+			http.Redirect(w, r, "/admin?err=db", http.StatusSeeOther)
+			return
+		}
+		if adminCount <= 1 {
+			http.Redirect(w, r, "/admin?err=last-admin", http.StatusSeeOther)
+			return
+		}
+	}
+
+	// Delete the user
+	if _, err := h.DB.Exec(`DELETE FROM users WHERE id=?`, id); err != nil {
+		http.Redirect(w, r, "/admin?err=db", http.StatusSeeOther)
+		return
+	}
+
+	// Best-effort: remove their upload directory (ignore error)
+	_ = os.RemoveAll(path.Join(h.Cfg.UploadDir, targetUsername))
+
+	http.Redirect(w, r, "/admin?ok=user-deleted", http.StatusSeeOther)
 }
 
 func (h *Handler) UpdateSettings(w http.ResponseWriter, r *http.Request) {
@@ -596,6 +663,7 @@ func contains(slice []string, item string) bool {
 	}
 	return false
 }
+
 func splitNonEmpty(csv string) []string {
 	if csv == "" {
 		return nil

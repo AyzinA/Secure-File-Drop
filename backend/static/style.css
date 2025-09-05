@@ -195,3 +195,52 @@ button, input { font-size: 1rem; }
 
 /* Forms */
 .check { display:flex; align-items:center; gap:.5rem; color:var(--muted); }
+.inline-actions{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  flex-wrap:wrap;          /* wraps nicely on narrow screens */
+}
+.form-inline{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  margin:0;
+}
+.form-inline .grow{
+  flex:1;
+  min-width:140px;         /* keeps the input usable when narrow */
+}
+
+/* --- Force the 'Edit' column to a single row (no wrapping) --- */
+.tbl td:nth-child(3) {              /* the Edit column */
+  white-space: nowrap;              /* never wrap to a new line */
+}
+.tbl td:nth-child(3) .inline-actions{
+  display: flex !important;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: nowrap;                /* keep both forms on the same row */
+}
+.tbl td:nth-child(3) .form-inline{
+  display: flex !important;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+  flex-wrap: nowrap;                /* keep input, checkbox, button inline */
+  min-width: 0;                     /* allow flex items to shrink */
+}
+.tbl td:nth-child(3) .form-inline input[type="password"]{
+  width: 190px;                     /* reasonable fixed width */
+  flex: 0 0 auto;                   /* don't expand and push buttons */
+  min-width: 0;
+}
+.tbl td:nth-child(3) label.check{
+  display: inline-flex;             /* keep checkbox + label inline */
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+}
+.tbl td:nth-child(3) .btn{
+  white-space: nowrap;              /* keep button text on one line */
+}
