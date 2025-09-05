@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My account • Secure File Drop</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="wrap">
+            <div class="brand">Secure File Drop</div>
+            <nav>
+                {{if .IsAdmin}}<a href="/admin">Admin</a>{{end}}
+                {{if .IsAdmin}}<a href="/logs">Logs</a>{{end}}
+                <a href="/upload">Upload</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Hi, {{.Username}}</h1>
+
+        <section class="card">
+            <h2>Change password</h2>
+
+            {{if .Error}}<div class="alert alert-error">{{.Error}}</div>{{end}}
+            {{if .OK}}<div class="alert">{{.OK}}</div>{{end}}
+
+            <form class="form-grid" method="post" action="/me/password">
+                <input type="password" name="current_password" placeholder="Current password" required>
+                <input type="password" name="new_password" placeholder="New password" required>
+                <input type="password" name="confirm_password" placeholder="Confirm new password" required>
+                <button class="btn" type="submit">Update</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Your upload history</h2>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Size (MB)</th>
+                            <th>Type</th>
+                            <th>IP</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .History}}
+                        <tr>
+                            <td>{{.Filename}}</td>
+                            <td>{{printf "%.2f" .Size}}</td>
+                            <td>{{.ContentType}}</td>
+                            <td>{{.IPAddress}}</td>
+                            <td>{{.Status}}</td>
+                            <td>{{.Timestamp}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

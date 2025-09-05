@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Upload • Secure File Drop</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/upload.js" defer></script>
+</head>
+
+<body>
+  <header class="topbar">
+  <div class="wrap">
+    <div class="brand">Secure File Drop</div>
+    <nav>
+      <!-- upload.html -->
+      {{if .IsAdmin}}<a href="/admin">Admin</a>{{end}}
+      {{if .IsAdmin}}<a href="/logs">Logs</a>{{end}}
+      <a href="/me">My account</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container">
+    <h1>Upload files</h1>
+    <div id="drop-area" class="card">
+      <p class="muted">Drag & drop files here or click to choose</p>
+      <input type="file" id="file-input" multiple hidden>
+      <button class="ghost-btn" id="choose-btn" type="button">Choose files</button>
+    </div>
+    <div id="progress-list"></div>
+  </main>
+</body>
+
+</html>

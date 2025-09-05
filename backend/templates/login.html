@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login • Secure File Drop</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container narrow">
+    <h1>Welcome</h1>
+
+    {{if .Error}}
+    <div class="alert alert-error">{{.Error}}</div>
+    {{end}}
+
+    <section class="card">
+      <form method="post" action="/login" class="form-grid">
+        <input type="text" name="username" placeholder="Username" autocomplete="username" required value="{{.Username}}">
+        <input type="password" name="password" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit">Sign in</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Logs • Secure File Drop</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header class="topbar">
+  <div class="wrap">
+    <div class="brand">Secure File Drop</div>
+    <nav>
+      {{if .IsAdmin}}<a href="/admin">Admin</a>{{end}}
+      <a href="/upload">Upload</a>
+      <a href="/me">My account</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </div>
+</header>
+
+    <main class="container">
+        <h1>Upload Logs</h1>
+        <div class="card">
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Filename</th>
+                            <th>Size (MB)</th>
+                            <th>Content Type</th>
+                            <th>IP</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Logs}}
+                        <tr>
+                            <td>{{.Username}}</td>
+                            <td>{{.Filename}}</td>
+                            <td>{{printf "%.2f" .Size}}</td>
+                            <td>{{.ContentType}}</td>
+                            <td>{{.IPAddress}}</td>
+                            <td>{{.Status}}</td>
+                            <td>{{.Timestamp}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

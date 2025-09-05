@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:8000"
+    volumes:
+      - ${UPLOAD_DIR}:/app/uploads
+      - ${DB_DIR}:/app/db
+      - ./certs:/app/certs
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - UPLOAD_DIR=/app/uploads
+      - DB_DIR=/app/db
+      - CERT_FILE=/app/certs/cert.pem
+      - KEY_FILE=/app/certs/key.pem
+      - ALLOWED_EXTENSIONS=${ALLOWED_EXTENSIONS}
+      - BLOCKED_EXTENSIONS=${BLOCKED_EXTENSIONS}
+      - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB}
+      - HOST=${HOST}
+      - PORT=8000
+      - USE_TLS=${USE_TLS}
+    security_opt:
+      - no-new-privileges:true
+    # ⬇️ Comment this out on Windows to avoid permissions issues
+    user: 1000:1000
+    restart: unless-stopped

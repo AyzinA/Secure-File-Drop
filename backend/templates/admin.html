@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Panel • Secure File Drop</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="wrap">
+            <div class="brand">Secure File Drop</div>
+            <nav>
+                <a href="/logs">Logs</a>
+                <a href="/upload">Upload</a>
+                <a href="/me">My account</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Admin Panel</h1>
+
+        <!-- NEW: inline banners -->
+        {{if .Error}}<div class="alert alert-error">{{.Error}}</div>{{end}}
+        {{if .OK}}<div class="alert">{{.OK}}</div>{{end}}
+
+        <div class="grid">
+            <section class="card">
+                <h2>Create User</h2>
+                <form method="post" action="/admin/users" class="form-grid">
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit" class="btn">Create</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>How to use</h2>
+                <p>
+                    • Use <strong>Create User</strong> to add new accounts.<br>
+                    • Adjust <strong>Allowed / Blocked extensions</strong> and
+                    <strong>Max upload size</strong> under <strong>Update Settings</strong>.<br>
+                    • Review <strong>Current policy</strong> to see what’s enforced.<br>
+                    • Manage <strong>Existing Users</strong> — reset passwords or grant admin rights.<br>
+                    • Use <strong>Logs</strong> (in the top menu) to monitor all uploads.
+                </p>
+            </section>
+        </div>
+
+        <section class="card">
+            <h2>Update Settings</h2>
+            <form method="post" action="/admin/settings" class="form-grid">
+                <input type="text" name="allowed_extensions" placeholder="Allowed (comma)" value="{{.Settings.Allowed}}"
+                    required>
+                <input type="text" name="blocked_extensions" placeholder="Blocked (comma)" value="{{.Settings.Blocked}}"
+                    required>
+                <input type="number" name="max_upload_size_mb" placeholder="Max Upload Size (MB)" min="1"
+                    value="{{.Settings.MaxMB}}" required>
+                <button type="submit" class="btn">Save</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Current policy</h2>
+            <div class="table-wrap">
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Allowed extensions</th>
+                            <th>Blocked extensions</th>
+                            <th>Max size (MB)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">{{.Settings.Allowed}}</td>
+                            <td class="mono">{{.Settings.Blocked}}</td>
+                            <td>{{.Settings.MaxMB}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Existing Users</h2>
+            <div class="table-wrap">
+                <table class="tbl">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th style="width:340px">Edit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Users}}
+                        <tr>
+                            <td>{{.Username}}</td>
+                            <td>{{if .IsAdmin}}Admin{{else}}User{{end}}</td>
+                            <td>
+                                <form class="form-inline" method="post" action="/admin/users/update"
+                                    style="display:flex;gap:.5rem;align-items:center">
+                                    <input type="hidden" name="user_id" value="{{.ID}}">
+                                    <input type="password" name="new_password" placeholder="New password (optional)"
+                                        style="flex:1">
+                                    <label class="check"><input type="checkbox" name="is_admin" {{if
+                                            .IsAdmin}}checked{{end}}> Admin</label>
+                                    <button class="btn" type="submit">Update</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
